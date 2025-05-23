@@ -117,6 +117,8 @@ Hipace::Hipace () :
     queryWithParser(pph, "deposit_rho", m_deposit_rho);
     m_deposit_rho_individual = m_diags.needsRhoIndividual();
     queryWithParser(pph, "deposit_rho_individual", m_deposit_rho_individual);
+    m_deposit_temp_individual = m_diags.needsTempIndividual();
+    queryWithParser(pph, "deposit_temp_individual", m_deposit_temp_individual);
     queryWithParser(pph, "interpolate_neutralizing_background",
         m_interpolate_neutralizing_background);
     bool do_mfi_sync = false;
@@ -595,8 +597,6 @@ Hipace::SolveOneSlice (int islice, int step)
         m_multi_beam.ReorderParticles( WhichBeamSlice::This, step, m_slice_geom[0]);
     }
 
-    m_multi_plasma.InSituComputeDiags(step, islice, m_max_step, m_physical_time, m_max_time);
-
     if (m_N_level > 1) {
         m_multi_beam.TagByLevel(current_N_level, m_3D_geom, WhichSlice::This);
         m_multi_plasma.TagByLevel(current_N_level, m_3D_geom);
@@ -612,6 +612,15 @@ Hipace::SolveOneSlice (int islice, int step)
 
     // write laser aabs into fields MultiFab
     m_multi_laser.UpdateLaserAabs(islice, current_N_level, m_fields, m_3D_geom);
+
+    // has to be after aabs writing
+    m_multi_plasma.InSituComputeDiags(step, islice, m_max_step, m_physical_time, m_max_time);
+
+    // deposit temperature
+    for (int lev=0; lev<current_N_level; ++lev) {
+        // deposit w, ux, uy, uz, ux2, uy2 and uz2 for all plasmas
+        m_multi_plasma.DoDepositTemperature(m_fields, m_3D_geom, lev);
+    }
 
     // deposit current
     for (int lev=0; lev<current_N_level; ++lev) {
