@@ -126,6 +126,14 @@ public:
      */
     void ExplicitMGSolveBxBy (const int lev, const int which_slice);
 
+    /**
+     * \brief Compute Ez on the Next slice
+     *
+     * \param[in] current_N_level number of MR levels
+     * \param[in] step current time step
+     */
+    void CalculateEzNext (const int current_N_level, const int step);
+
     /** \brief Reset plasma and field slice quantities to initial value.
      *
      * Typically done at the beginning of each iteration.

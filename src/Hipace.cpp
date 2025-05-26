@@ -728,6 +728,10 @@ Hipace::SolveOneSlice (int islice, int step)
         m_multi_plasma.AdvanceParticles(m_fields, m_3D_geom, false, lev, current_N_level);
     }
 
+    if (m_depos_order_z == 2) {
+        CalculateEzNext(current_N_level, step);
+    }
+
     // get minimum beam acceleration on level 0
     m_adaptive_time_step.GatherMinAccSlice(m_multi_beam, m_3D_geom[0], m_fields);
 
@@ -753,6 +757,39 @@ Hipace::SolveOneSlice (int islice, int step)
     m_multi_beam.shiftBeamSlices();
 
     m_multi_laser.ShiftLaserSlices(islice);
+}
+
+void
+Hipace::CalculateEzNext (const int current_N_level, const int step)
+{
+    if (m_N_level > 1) {
+        // tag to next slice for deposition
+        m_multi_plasma.TagByLevel(current_N_level, m_3D_geom);
+    }
+
+    for (int lev=0; lev<current_N_level; ++lev) {
+
+        if (m_explicit) {
+            // add beam jx jy to the next slice
+            m_fields.duplicate(lev, WhichSlice::Next, {"jx", "jy"},
+                                    WhichSlice::Next, {"jx_beam", "jy_beam"});
+        } else {
+            // beams deposit jx jy to the next slice
+            m_multi_beam.DepositCurrentSlice(m_fields, m_3D_geom, lev, step,
+                m_do_beam_jx_jy_deposition, false, false, WhichSlice::Next, WhichBeamSlice::Next);
+        }
+
+        // deposit plasma jx and jy on the next slice
+        m_multi_plasma.DepositCurrent(m_fields,
+            WhichSlice::Next, true, false, false, false, false, m_3D_geom, lev);
+    }
+
+    m_fields.SolvePoissonEz(m_3D_geom, current_N_level, WhichSlice::Next);
+
+    for (int lev=0; lev<current_N_level; ++lev) {
+        // clean up jx and jy
+        m_fields.setVal(0., lev, WhichSlice::Next, "jx", "jy");
+    }
 }
 
 void
