@@ -45,7 +45,8 @@ namespace ParticleBoundary {
     enum type {
         Reflecting,
         Periodic,
-        Absorbing
+        Absorbing,
+        Thermal
     };
 }
 
@@ -319,6 +320,8 @@ public:
     inline static std::array<amrex::Real, 2> m_boundary_particle_lo;
     /** upper bound of bounding box for the particles */
     inline static std::array<amrex::Real, 2> m_boundary_particle_hi;
+    /** temperature of the boundary particles in eV */
+    inline static amrex::Real m_boundary_temperature;
 
     // Grid external fields
 

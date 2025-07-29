@@ -164,7 +164,6 @@ AdvancePlasmaParticles (PlasmaParticleContainer& plasma, const Fields & fields,
                         ux += sdz*dz_ux + 0.5_rt*sdz*sdz*dz_ux_dual.epsilon;
                         uy += sdz*dz_uy + 0.5_rt*sdz*sdz*dz_uy_dual.epsilon;
                         psi += sdz*dz_psi + 0.5_rt*sdz*sdz*dz_psi_dual.epsilon;
-
                     }
 
                     // full push in position
@@ -176,6 +175,8 @@ AdvancePlasmaParticles (PlasmaParticleContainer& plasma, const Fields & fields,
                     if (enforceBC(ptd, ip, xp, yp, ux, uy, PlasmaIdx::w)) return;
                     ptd.pos(0, ip) = xp;
                     ptd.pos(1, ip) = yp;
+
+                    if (ptd.id(ip) == 4) {enforceThermalBC(ptd, ip, ux, uy)}; // function to overwrite velocities to make them 'thermal'
 
                     if (!temp_slice) {
                         // update values of the last non temp slice
@@ -210,8 +211,8 @@ AdvancePlasmaParticles (PlasmaParticleContainer& plasma, const Fields & fields,
                         ux += sdz*dz_ux + 0.5_rt*sdz*sdz*dz_ux_dual.epsilon;
                         uy += sdz*dz_uy + 0.5_rt*sdz*sdz*dz_uy_dual.epsilon;
                         psi += sdz*dz_psi + 0.5_rt*sdz*sdz*dz_psi_dual.epsilon;
-
                     }
+
                     ptd.rdata(PlasmaIdx::ux)[ip] = ux;
                     ptd.rdata(PlasmaIdx::uy)[ip] = uy;
                     ptd.rdata(PlasmaIdx::psi)[ip] = psi;

@@ -87,6 +87,21 @@ struct EnforceBC
                 if (y < 0) y += len_y;
                 y += m_plo[1];
                 invalid = false;
+            } else if (m_particle_boundary == ParticleBoundary::Thermal) {
+                x = std::fmod(x - m_plo[0], 2*len_x);
+                if (x < 0) x += 2*len_x;
+                x += m_plo[0];
+                if (x > m_phi[0]) {
+                    x = 2*m_phi[0] - x;     // reflect particle in position
+                }
+                y = std::fmod(y - m_plo[1], 2*len_y);
+                if (y < 0) y += 2*len_y;
+                y += m_plo[1];
+                if (y > m_phi[1]) {
+                    y = 2*m_phi[1] - y;     // reflect particle in position
+                }
+                invalid = false;
+                ptd.id(ip) = 4;         // flag to reconfigure particle velocity with a themal velocity
             } else {
                 ptd.rdata(w_index)[ip] = amrex::Real(0);
                 ptd.id(ip).make_invalid();

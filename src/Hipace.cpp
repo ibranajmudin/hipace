@@ -210,6 +210,9 @@ Hipace::Hipace () :
         m_boundary_particles = ParticleBoundary::Periodic;
     } else if (particle_boundary == "Absorbing") {
         m_boundary_particles = ParticleBoundary::Absorbing;
+    } else if (particle_boundary == "Thermal") {
+        m_boundary_particles = ParticleBoundary::Thermal;
+        getWithParser(ppb, "temperature", m_boundary_temperature)
     } else {
         amrex::Abort("Unknown particle boundary '" + particle_boundary +
             "', must be 'Reflecting', 'Periodic' or 'Absorbing'");
