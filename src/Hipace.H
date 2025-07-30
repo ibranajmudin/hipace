@@ -321,7 +321,7 @@ public:
     /** upper bound of bounding box for the particles */
     inline static std::array<amrex::Real, 2> m_boundary_particle_hi;
     /** temperature of the boundary particles in eV */
-    inline static amrex::Real m_boundary_temperature;
+    inline static amrex::Real m_boundary_temperature_in_ev;
 
     // Grid external fields
 

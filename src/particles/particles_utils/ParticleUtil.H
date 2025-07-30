@@ -138,4 +138,7 @@ namespace ParticleUtil
     }
 }
 
+    AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+    void update_thermal_particles (const amrex::Real boundary_temperature) {}
+
 #endif

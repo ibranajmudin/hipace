@@ -176,8 +176,6 @@ AdvancePlasmaParticles (PlasmaParticleContainer& plasma, const Fields & fields,
                     ptd.pos(0, ip) = xp;
                     ptd.pos(1, ip) = yp;
 
-                    if (ptd.id(ip) == 4) {enforceThermalBC(ptd, ip, ux, uy)}; // function to overwrite velocities to make them 'thermal'
-
                     if (!temp_slice) {
                         // update values of the last non temp slice
                         // the next push always starts from these
@@ -271,6 +269,20 @@ AdvancePlasmaParticles (PlasmaParticleContainer& plasma, const Fields & fields,
 #endif
                 } // loop over subcycles
             });
+            
+            // If thermal boundaries -> apply BC to tagged particles
+            if ( Hipace::m_boundary_particles == ParticleBoundary::Thermal ) {
+                
+                // Call loop with RNG engine 
+                amrex::ParallelForRNG(pti.numParticles(),
+            [=] AMREX_GPU_DEVICE (int ip, const amrex::RandomEngine& engine) {
+                if (ptd.id(ip) == 4) {          // reflect velocity in x
+
+                } else if (ptd.id(ip) == 5) {   // reflect velocity in y
+
+                }
+            });
+            };
 
 #ifdef HIPACE_USE_AB5_PUSH
         if (!temp_slice && lev == current_N_level - 1) {
