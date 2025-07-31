@@ -285,7 +285,7 @@ AdvancePlasmaParticles (PlasmaParticleContainer& plasma, const Fields & fields,
                 if (ptd.id(ip) == 4) {          // reflect velocity in x
                     // Get previous velocity
                     amrex::Real ux = ptd.rdata(PlasmaIdx::ux_half_step)[ip];
-                    sign_ux = (ux > 0) - (ux < 0);
+                    amrex::Real sign_ux = (ux > 0) - (ux < 0);
                     ux = -sign_ux * std::abs(amrex::RandomNormal(0.0, u_th_std, engine));
                     ptd.rdata(PlasmaIdx::ux)[ip] = ux;
                     ptd.rdata(PlasmaIdx::ux_half_step)[ip] = ux;
@@ -294,7 +294,7 @@ AdvancePlasmaParticles (PlasmaParticleContainer& plasma, const Fields & fields,
 
                 } else if (ptd.id(ip) == 5) {   // reflect velocity in y
                     amrex::Real uy = ptd.rdata(PlasmaIdx::uy_half_step)[ip];
-                    sign_uy = (uy > 0) - (uy < 0);
+                    amrex::Real sign_uy = (uy > 0) - (uy < 0);
                     uy = -sign_uy * std::abs(amrex::RandomNormal(0.0, u_th_std, engine));
                     ptd.rdata(PlasmaIdx::uy)[ip] = uy;
                     ptd.rdata(PlasmaIdx::uy_half_step)[ip] = uy;
