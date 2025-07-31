@@ -21,6 +21,7 @@
 #include "particles/particles_utils/ParticleUtil.H"
 
 #include <string>
+#include <cmath>
 
 // explicitly instantiate template to fix wrong warning with gcc
 template struct PlasmaMomentumDerivative<amrex::Real>;
@@ -270,16 +271,35 @@ AdvancePlasmaParticles (PlasmaParticleContainer& plasma, const Fields & fields,
                 } // loop over subcycles
             });
             
-            // If thermal boundaries -> apply BC to tagged particles
+            // For applying thermal boundary conditions
             if ( Hipace::m_boundary_particles == ParticleBoundary::Thermal ) {
-                
-                // Call loop with RNG engine 
+                // Get boundary_temp
+                const amrex::Real boundary_temp = Hipace::m_boundary_temperature_in_ev;
+                // Calculate thermal velocity deviation sqrt(kT/Mc^2)
+                const amrex::Real u_th_std = std::sqrt( (boundary_temp*phys_const.q_e)
+                                                        /(plasma.m_mass*phys_const.c*phys_const.c));
+
+                // Call proper loop with RNG engine handling
                 amrex::ParallelForRNG(pti.numParticles(),
             [=] AMREX_GPU_DEVICE (int ip, const amrex::RandomEngine& engine) {
                 if (ptd.id(ip) == 4) {          // reflect velocity in x
+                    // Get previous velocity
+                    amrex::Real ux = ptd.rdata(PlasmaIdx::ux_half_step)[ip];
+                    sign_ux = (ux > 0) - (ux < 0);
+                    ux = -sign_ux * std::abs(amrex::RandomNormal(0.0, u_th_std, engine));
+                    ptd.rdata(PlasmaIdx::ux)[ip] = ux;
+                    ptd.rdata(PlasmaIdx::ux_half_step)[ip] = ux;
+                    // Reset particle id as it no longer has to be thermalised
+                    ptd.id(ip) = 1;
 
                 } else if (ptd.id(ip) == 5) {   // reflect velocity in y
-
+                    amrex::Real uy = ptd.rdata(PlasmaIdx::uy_half_step)[ip];
+                    sign_uy = (uy > 0) - (uy < 0);
+                    uy = -sign_uy * std::abs(amrex::RandomNormal(0.0, u_th_std, engine));
+                    ptd.rdata(PlasmaIdx::uy)[ip] = uy;
+                    ptd.rdata(PlasmaIdx::uy_half_step)[ip] = uy;
+                    // Reset particle id as it no longer has to be thermalised
+                    ptd.id(ip) = 1;
                 }
             });
             };
