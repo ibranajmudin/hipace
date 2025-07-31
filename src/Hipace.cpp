@@ -215,7 +215,7 @@ Hipace::Hipace () :
         getWithParser(ppb, "temperature", m_boundary_temperature)
     } else {
         amrex::Abort("Unknown particle boundary '" + particle_boundary +
-            "', must be 'Reflecting', 'Periodic' or 'Absorbing'");
+            "', must be 'Reflecting', 'Periodic', 'Absorbing', or 'Thermal'");
     }
 
     MakeGeometry();
