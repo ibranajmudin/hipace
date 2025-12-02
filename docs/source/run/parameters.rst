@@ -924,9 +924,6 @@ Parameters starting with ``lasers.`` apply to all laser pulses, parameters start
     The names of the laser pulses, separated by a space.
     To run without a laser, choose the name ``no_laser``.
 
-* ``lasers.lambda0`` (`float`)
-    Wavelength of the laser pulses. Currently, all pulses must have the same wavelength.
-
 * ``lasers.polarization`` (`linear` or `circular`) optional (default `linear`)
     Polarization of the laser pulse.
     For the same peak amplitude, the ponderomotive force is 2x larger in circular polarization than in linear polarization.
@@ -964,6 +961,9 @@ Parameters starting with ``lasers.`` apply to all laser pulses, parameters start
 
       * ``<laser name>.a0`` (`float`) optional (default `0`)
           Peak normalized vector potential of the laser pulse.
+
+      * ``lasers.lambda0`` (`float`)
+          Wavelength of the laser pulses. Currently, all pulses must have the same wavelength.
 
       * ``<laser name>.position_mean`` (3 `float`) optional (default `0 0 0`)
           The mean position of the laser in `x, y, z`.
@@ -1017,6 +1017,11 @@ Parameters starting with ``lasers.`` apply to all laser pulses, parameters start
           The laser pulse is injected in the HiPACE++ simulation so that the beginning of the temporal profile from the file corresponds to the head of the simulation box, and time (in the file) is converted to space (HiPACE++ longitudinal coordinate) with ``z = -c*t + const``.
           If this parameter is set, then the file is used to initialize all lasers instead of using a gaussian profile.
 
+      * ``<laser name>.lambda0`` (`float`) optional (default `<read from file>`)
+          Wavelength of the laser pulses. Currently, all pulses must have the same wavelength.
+          The wavelength is already read in from the metadata of the openPMD file,
+          however it can be overwritten using this parameter.
+
       * ``<laser name>.openPMD_laser_name`` (`string`) optional (default `laserEnvelope`)
           Name of the laser envelope field inside the openPMD file to be read in.
 
@@ -1030,6 +1035,9 @@ Parameters starting with ``lasers.`` apply to all laser pulses, parameters start
 
       * ``<laser name>.laser_imag(x,y,z)`` optional (`string`) (default `""`)
           Expression for the imaginary part of the laser envelope `x, y, z`.
+
+      * ``lasers.lambda0`` (`float`)
+          Wavelength of the laser pulses. Currently, all pulses must have the same wavelength.
 
 Diagnostic parameters
 ---------------------
