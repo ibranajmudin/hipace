@@ -305,6 +305,9 @@ public:
     /** How often the insitu plasma diagnostics should be computed and written
      * Default is 0, meaning no output */
     int m_insitu_period {0};
+    /** Whether to do a histogram diagnostic 
+     * Default is not */
+    bool m_do_histogram {0};
 private:
     std::string m_name; /**< name of the species */
     int m_nslices; /**< number of z slices of the domain */
@@ -322,6 +325,11 @@ private:
     amrex::Vector<int> m_insitu_sum_idata;
     /** Prefix/path for the output files */
     std::string m_insitu_file_prefix = "";
+    /** Axis limits for histogram diagnostic */
+    amrex::Array<amrex::Real, 2> m_histogram_limits {0,1};
+    int m_n_histogram_bins; /**< Number of bins for the histogram diagnostic */
+    /** Per-slice histogram-med plasma properties */
+    amrex::Vector<amrex::Vector<amrex::Real>> m_insitu_histogram_data;
 };
 
 /** \brief Iterator over boxes in a particle container */

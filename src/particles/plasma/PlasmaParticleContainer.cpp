@@ -167,6 +167,8 @@ PlasmaParticleContainer::ReadParameters ()
     queryWithParserAlt(pp, "reorder_idx_type", idx_array, pp_alt);
     m_reorder_idx_type = amrex::IntVect(idx_array[0], idx_array[1], 0);
     queryWithParserAlt(pp, "insitu_period", m_insitu_period, pp_alt);
+    quertWithParserAlt(pp, "do_hist", m_do_histogram, pp_alt);
+    quertWithParserAlt(pp, "hist_limits", m_histogram_limits, pp_alt);
     m_insitu_file_prefix = Hipace::m_output_folder + "/insitu";
     const bool set_file_prefix =
         queryWithParserAlt(pp, "insitu_file_prefix", m_insitu_file_prefix, pp_alt);
@@ -293,6 +295,12 @@ PlasmaParticleContainer::InitData (const amrex::Vector<amrex::Geometry>& geom3d)
         m_insitu_idata.resize(m_nslices*m_insitu_nip, 0);
         m_insitu_sum_rdata.resize(m_insitu_nrp, 0.);
         m_insitu_sum_idata.resize(m_insitu_nip, 0);
+
+        // If a histogram is also requested, allocate memory for that
+        if (m_do_histogram) {
+            queryWithParserAlt(pp, "hist_nbins", m_n_histogram_bins, pp_alt)
+            m_insitu_histogram_data.resize(m_nslices, amrex::Vector<amrex::Real>(m_n_histogram_bins))
+        }
     }
 }
 
