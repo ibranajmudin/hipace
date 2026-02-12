@@ -167,7 +167,7 @@ PlasmaParticleContainer::ReadParameters ()
     queryWithParserAlt(pp, "reorder_idx_type", idx_array, pp_alt);
     m_reorder_idx_type = amrex::IntVect(idx_array[0], idx_array[1], 0);
     queryWithParserAlt(pp, "insitu_period", m_insitu_period, pp_alt);
-    quertWithParserAlt(pp, "do_hist", m_do_histogram, pp_alt);
+    queryWithParserAlt(pp, "do_hist", m_do_histogram, pp_alt);
     quertWithParserAlt(pp, "hist_limits", m_histogram_limits, pp_alt);
     m_insitu_file_prefix = Hipace::m_output_folder + "/insitu";
     const bool set_file_prefix =
@@ -298,8 +298,10 @@ PlasmaParticleContainer::InitData (const amrex::Vector<amrex::Geometry>& geom3d)
 
         // If a histogram is also requested, allocate memory for that
         if (m_do_histogram) {
-            queryWithParserAlt(pp, "hist_nbins", m_n_histogram_bins, pp_alt)
-            m_insitu_histogram_data.resize(m_nslices, amrex::Vector<amrex::Real>(m_n_histogram_bins))
+            amrex::ParmParse pp(m_name);
+            amrex::ParmParse pp_alt("plasmas");
+            queryWithParserAlt(pp, "hist_nbins", m_n_histogram_bins, pp_alt);
+            m_insitu_histogram_data.resize(m_nslices, amrex::Vector<amrex::Real>(m_n_histogram_bins));
         }
     }
 }
@@ -956,13 +958,13 @@ PlasmaParticleContainer::InSituComputeDiags (int islice)
                     if (bin_num >=0 && bin_num < nbins) {
                         amrex::Gpu::Atomic::Add(&p_gpu_histogram[bin_num], 1);
                     }
-            })
+            });
             amrex::Vector<int> host_histogram(nbins);
             amrex::Gpu::copy(amrex::Gpu::deviceToHost, gpu_histogram.begin(), gpu_histogram.end(), host_histogram.begin());
             amrex::ParallelDescriptor::ReduceIntSum(host_histogram.data(), nbins);
 
             for (int b = 0; b < nbins; ++b) {
-                m_insitu_histogram_data[islice][b] = host_hist[b];
+                m_insitu_histogram_data[islice][b] = host_histogram[b];
             }
             // m_insitu_histogram_data[islice] = host_histogram;
         }
