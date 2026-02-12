@@ -960,12 +960,12 @@ PlasmaParticleContainer::InSituComputeDiags (int islice)
             amrex::Vector<int> host_histogram(nbins);
             amrex::Gpu::copy(amrex::Gpu::deviceToHost, gpu_histogram.begin(), gpu_histogram.end(), host_histogram.begin());
             amrex::ParallelDescriptor::ReduceIntSum(host_histogram.data(), nbins);
-            
+
             for (int b = 0; b < nbins; ++b) {
                 m_insitu_histogram_data[islice][b] = host_hist[b];
             }
             // m_insitu_histogram_data[islice] = host_histogram;
-        }   
+        }
     }
 }
 

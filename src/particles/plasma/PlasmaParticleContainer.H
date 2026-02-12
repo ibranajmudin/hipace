@@ -305,7 +305,7 @@ public:
     /** How often the insitu plasma diagnostics should be computed and written
      * Default is 0, meaning no output */
     int m_insitu_period {0};
-    /** Whether to do a histogram diagnostic 
+    /** Whether to do a histogram diagnostic
      * Default is not */
     bool m_do_histogram {0};
 private:
