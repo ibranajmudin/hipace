@@ -930,6 +930,42 @@ PlasmaParticleContainer::InSituComputeDiags (int islice)
             m_insitu_idata[islice + i * m_nslices] = int_arr[i];
             m_insitu_sum_idata[i] += int_arr[i];
         }
+
+        // Normal insitu diagnostics are now done for this tile(?), now do the histogram diagnostic
+        if (m_do_histogram) {
+            amrex::Real umin = m_histogram_limits[0];
+            amrex::Real umax = m_histogram_limits[1];
+            amrex::Real range_inv = 1._rt/(umax-umin);
+            int nbins = m_n_histogram_bins;
+
+            amrex::Gpu::DeviceVector<int> gpu_histogram(nbins, 0);      // Initialise histogram array with 0's
+            int* p_gpu_histogram = gpu_histogram.data();
+
+            amrex::ParallelFor(num_particles,
+                [=] AMREX_GPU_DEVICE (int ip) noexcept{
+                    const amrex::Real ux = ptd.rdata(PlasmaIdx::ux)[ip];
+                    const amrex::Real uy = ptd.rdata(PlasmaIdx::uy)[ip];
+                    const amrex::Real psi = ptd.rdata(PlasmaIdx::psi)[ip];
+                    const amrex::Real psi_inv = 1._rt / psi;
+                    amrex::Real Aabssqp = 0._rt;
+                    const amrex::Real gamma = plasma_gamma(ux, uy, psi, psi_inv, Aabssqp);
+                    const amrex::Real uz = plasma_uz(gamma, psi);
+                    const amrex::Real u = std::sqrt(ux*ux + uy*uy + uz*uz);
+
+                    const int bin_num = static_cast<int>((u-umin) * range_inv * static_cast<amrex::Real>(nbins));
+                    if (bin_num >=0 && bin_num < nbins) {
+                        amrex::Gpu::Atomic::Add(&p_gpu_histogram[bin_num], 1);
+                    }
+            })
+            amrex::Vector<int> host_histogram(nbins);
+            amrex::Gpu::copy(amrex::Gpu::deviceToHost, gpu_histogram.begin(), gpu_histogram.end(), host_histogram.begin());
+            amrex::ParallelDescriptor::ReduceIntSum(host_histogram.data(), nbins);
+            
+            for (int b = 0; b < nbins; ++b) {
+                m_insitu_histogram_data[islice][b] = host_hist[b];
+            }
+            // m_insitu_histogram_data[islice] = host_histogram;
+        }   
     }
 }
 
