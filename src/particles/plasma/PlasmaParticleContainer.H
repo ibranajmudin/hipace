@@ -327,9 +327,11 @@ private:
     std::string m_insitu_file_prefix = "";
     /** Axis limits for histogram diagnostic */
     amrex::Array<amrex::Real, 2> m_histogram_limits {0,1};
-    int m_n_histogram_bins; /**< Number of bins for the histogram diagnostic */
+    int m_n_histogram_bins {1}; /**< Number of bins for the histogram diagnostic */
     /** Per-slice histogram-med plasma properties */
     amrex::Vector<amrex::Vector<amrex::Real>> m_insitu_histogram_data;
+    /** How often the histogram data is calculated */
+    int m_insitu_histogram_period {0};
 };
 
 /** \brief Iterator over boxes in a particle container */

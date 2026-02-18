@@ -168,7 +168,10 @@ PlasmaParticleContainer::ReadParameters ()
     m_reorder_idx_type = amrex::IntVect(idx_array[0], idx_array[1], 0);
     queryWithParserAlt(pp, "insitu_period", m_insitu_period, pp_alt);
     queryWithParserAlt(pp, "do_hist", m_do_histogram, pp_alt);
-    quertWithParserAlt(pp, "hist_limits", m_histogram_limits, pp_alt);
+    queryWithParserAlt(pp, "hist_limits", m_histogram_limits, pp_alt);
+    queryWithParserAlt(pp, "hist_nbins", m_n_histogram_bins, pp_alt);
+    queryWithParserAlt(pp, "hist_period", m_insitu_histogram_period, pp_alt);
+    if (m_do_histogram && !m_insitu_histogram_period) m_insitu_histogram_period = m_insitu_period;
     m_insitu_file_prefix = Hipace::m_output_folder + "/insitu";
     const bool set_file_prefix =
         queryWithParserAlt(pp, "insitu_file_prefix", m_insitu_file_prefix, pp_alt);
@@ -298,9 +301,6 @@ PlasmaParticleContainer::InitData (const amrex::Vector<amrex::Geometry>& geom3d)
 
         // If a histogram is also requested, allocate memory for that
         if (m_do_histogram) {
-            amrex::ParmParse pp(m_name);
-            amrex::ParmParse pp_alt("plasmas");
-            queryWithParserAlt(pp, "hist_nbins", m_n_histogram_bins, pp_alt);
             m_insitu_histogram_data.resize(m_nslices, amrex::Vector<amrex::Real>(m_n_histogram_bins));
         }
     }
@@ -934,7 +934,7 @@ PlasmaParticleContainer::InSituComputeDiags (int islice)
         }
 
         // Normal insitu diagnostics are now done for this tile(?), now do the histogram diagnostic
-        if (m_do_histogram) {
+        if (m_do_histogram && islice % m_insitu_histogram_period == 0) {
             amrex::Real umin = m_histogram_limits[0];
             amrex::Real umax = m_histogram_limits[1];
             amrex::Real range_inv = 1._rt/(umax-umin);
@@ -1001,7 +1001,7 @@ PlasmaParticleContainer::InSituWriteToFile (int step, amrex::Real time, const am
 
     // Specify the structure of the data later available in python
     // Avoid pointers to temporary objects as second argument, stack variables are ok
-    const amrex::Vector<insitu_utils::DataNode> all_data{
+    amrex::Vector<insitu_utils::DataNode> all_data{
         {"time"    , &time},
         {"step"    , &step},
         {"n_slices", &m_nslices},
@@ -1046,6 +1046,18 @@ PlasmaParticleContainer::InSituWriteToFile (int step, amrex::Real time, const am
             {"Np"    , &m_insitu_sum_idata[0]}
         }}
     };
+    
+    if (m_do_histogram) {
+        int num_histograms = std::floor(m_nslices/m_insitu_histogram_period);
+        amrex::Vector<insitu_utils::DataNode> all_hist_data;
+        for (int s = 0; s < num_histograms; ++s) {
+            all_hist_data.emplace_back(
+                std::to_string(s*m_insitu_histogram_period),
+                m_insitu_histogram_data[s].data(),
+                m_n_histogram_bins);   
+        }
+        all_data.emplace_back("histogram", all_hist_data);
+    }
 
     if (ofs.tellp() == 0) {
         // Write JSON header containing a NumPy structured datatype
@@ -1070,4 +1082,5 @@ PlasmaParticleContainer::InSituWriteToFile (int step, amrex::Real time, const am
     for (auto& x : m_insitu_idata) x = 0;
     for (auto& x : m_insitu_sum_rdata) x = 0.;
     for (auto& x : m_insitu_sum_idata) x = 0;
+    for (auto& x : m_insitu_histogram_data) std::fill(x.begin(), x.end(), 0); 
 }
