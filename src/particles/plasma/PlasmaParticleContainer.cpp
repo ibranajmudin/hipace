@@ -1048,7 +1048,7 @@ PlasmaParticleContainer::InSituWriteToFile (int step, amrex::Real time, const am
             {"Np"    , &m_insitu_sum_idata[0]}
         }}
     };
-    
+
     if (m_do_histogram) {
         int num_histograms = m_nslices / m_insitu_histogram_period;
         amrex::Vector<insitu_utils::DataNode> all_hist_data;
@@ -1084,5 +1084,5 @@ PlasmaParticleContainer::InSituWriteToFile (int step, amrex::Real time, const am
     for (auto& x : m_insitu_idata) x = 0;
     for (auto& x : m_insitu_sum_rdata) x = 0.;
     for (auto& x : m_insitu_sum_idata) x = 0;
-    for (auto& x : m_insitu_histogram_data) std::fill(x.begin(), x.end(), 0); 
+    for (auto& x : m_insitu_histogram_data) std::fill(x.begin(), x.end(), 0);
 }
