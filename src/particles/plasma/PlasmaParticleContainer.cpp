@@ -301,7 +301,8 @@ PlasmaParticleContainer::InitData (const amrex::Vector<amrex::Geometry>& geom3d)
 
         // If a histogram is also requested, allocate memory for that
         if (m_do_histogram) {
-            m_insitu_histogram_data.resize(m_nslices, amrex::Vector<amrex::Real>(m_n_histogram_bins));
+            int num_histograms = m_nslices / m_insitu_histogram_period;
+            m_insitu_histogram_data.resize(num_histograms, amrex::Vector<amrex::Real>(m_n_histogram_bins));
         }
     }
 }
@@ -840,7 +841,6 @@ PlasmaParticleContainer::InSituComputeDiags (int islice)
     {
         // Loading the data
         const auto ptd = pti.GetParticleTile().getParticleTileData();
-
         amrex::Long const num_particles = pti.numParticles();
 
         const PhysConst pc = get_phys_const();
@@ -944,7 +944,7 @@ PlasmaParticleContainer::InSituComputeDiags (int islice)
             int* p_gpu_histogram = gpu_histogram.data();
 
             amrex::ParallelFor(num_particles,
-                [=] AMREX_GPU_DEVICE (int ip) noexcept{
+                [=] AMREX_GPU_DEVICE (int ip) noexcept {
                     const amrex::Real ux = ptd.rdata(PlasmaIdx::ux)[ip];
                     const amrex::Real uy = ptd.rdata(PlasmaIdx::uy)[ip];
                     const amrex::Real psi = ptd.rdata(PlasmaIdx::psi)[ip];
@@ -963,10 +963,12 @@ PlasmaParticleContainer::InSituComputeDiags (int islice)
             amrex::Gpu::copy(amrex::Gpu::deviceToHost, gpu_histogram.begin(), gpu_histogram.end(), host_histogram.begin());
             amrex::ParallelDescriptor::ReduceIntSum(host_histogram.data(), nbins);
 
+
+            const amrex::Real histogram_period_inv = 1._rt / static_cast<amrex::Real>(m_insitu_histogram_period);
+            amrex::Real k = static_cast<amrex::Real>(m_nslices-islice)*histogram_period_inv - 1;
             for (int b = 0; b < nbins; ++b) {
-                m_insitu_histogram_data[islice][b] = host_histogram[b];
+                m_insitu_histogram_data[static_cast<int>(k)][b] = host_histogram[b];
             }
-            // m_insitu_histogram_data[islice] = host_histogram;
         }
     }
 }
@@ -1048,13 +1050,13 @@ PlasmaParticleContainer::InSituWriteToFile (int step, amrex::Real time, const am
     };
     
     if (m_do_histogram) {
-        int num_histograms = std::floor(m_nslices/m_insitu_histogram_period);
+        int num_histograms = m_nslices / m_insitu_histogram_period;
         amrex::Vector<insitu_utils::DataNode> all_hist_data;
         for (int s = 0; s < num_histograms; ++s) {
             all_hist_data.emplace_back(
                 std::to_string(s*m_insitu_histogram_period),
                 m_insitu_histogram_data[s].data(),
-                m_n_histogram_bins);   
+                m_n_histogram_bins);
         }
         all_data.emplace_back("histogram", all_hist_data);
     }
