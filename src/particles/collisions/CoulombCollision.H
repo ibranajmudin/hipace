@@ -63,7 +63,7 @@ public:
      *            Coulomb logarithm is deduced from the plasma temperature, measured in each cell.
      * \param[in] background_density_SI background plasma density (only needed for normalized units)
      **/
-    static void doBeamPlasmaCoulombCollision ( int islice,
+    static void doBeamPlasmaCoulombCollision ( int islice, int collide_every,
         int lev, const amrex::Box& bx, const amrex::Geometry& geom,
         BeamParticleContainer& species1, PlasmaParticleContainer& species2, amrex::Real CoulombLog,
         amrex::Real background_density_SI);

@@ -46,7 +46,8 @@ namespace ParticleBoundary {
     enum type {
         Reflecting,
         Periodic,
-        Absorbing
+        Absorbing,
+        Thermal
     };
 }
 
@@ -337,6 +338,8 @@ public:
     inline static FieldBoundary::type m_boundary_field = FieldBoundary::Dirichlet;
     /** type of boundary used for particles */
     inline static ParticleBoundary::type m_boundary_particles = ParticleBoundary::Absorbing;
+    /** boundary temperature (if using Thermal particle boundaries) */
+    amrex::Real m_boundary_temperature = 0;
     /** lower bound of bounding box for the particles */
     inline static std::array<amrex::Real, 2> m_boundary_particle_lo;
     /** upper bound of bounding box for the particles */

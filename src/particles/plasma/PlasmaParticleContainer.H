@@ -126,7 +126,7 @@ struct PlasmaID
         from_field_ionization = 2,
         from_laser_ionization = 3,
         invalid = -1,
-        invalid_at_boundary = -2
+        invalid_at_boundary = -2,
     };
 };
 

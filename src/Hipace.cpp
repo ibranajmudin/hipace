@@ -233,9 +233,12 @@ Hipace::ReadParameters ()
         m_boundary_particles = ParticleBoundary::Periodic;
     } else if (particle_boundary == "Absorbing") {
         m_boundary_particles = ParticleBoundary::Absorbing;
+    } else if (particle_boundary == "Thermal") {
+        m_boundary_particles = ParticleBoundary::Thermal;
+        queryWithParser(ppb, "temperature_in_ev", m_boundary_temperature);
     } else {
         amrex::Abort("Unknown particle boundary '" + particle_boundary +
-            "', must be 'Reflecting', 'Periodic' or 'Absorbing'");
+            "', must be 'Reflecting', 'Periodic', 'Absorbing', or 'Thermal'");
     }
 
     MakeGeometry();
@@ -1301,7 +1304,7 @@ Hipace::doCoulombCollision (int islice)
 
             // TODO: enable tiling
 
-            CoulombCollision::doBeamPlasmaCoulombCollision( islice,
+            CoulombCollision::doBeamPlasmaCoulombCollision( islice, m_all_collisions[i].m_collide_every,
                 lev, m_slice_geom[0].Domain(), m_slice_geom[0], species1, species2,
                 m_all_collisions[i].m_CoulombLog, m_background_density_SI);
         } else {

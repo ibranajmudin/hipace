@@ -14,6 +14,7 @@
 #include "utils/Constants.H"
 #include "Hipace.H"
 #include "GetAndSetPosition.H"
+#include "RethermaliseMomentum.H"
 #include "utils/HipaceProfilerWrapper.H"
 #include "utils/GPUUtil.H"
 #include "utils/OMPUtil.H"
@@ -273,6 +274,26 @@ AdvancePlasmaParticles (PlasmaParticleContainer& plasma, const Fields & fields,
 #endif
                 } // loop over subcycles
             });
+
+        // Rethermalise particles at the boundary here.
+        
+        amrex::ParallelForRNG(int(pti.numParticles()),
+            [=] AMREX_GPU_DEVICE (int ip, const amrex::RandomEngine& engine) {
+
+                if (ptd.id(ip) != PlasmaID::invalid_at_boundary) return;
+
+                amrex::Real xp = ptd.pos(0, ip);
+                amrex::Real yp = ptd.pos(1, ip);
+                amrex::Real ux = ptd.rdata(PlasmaIdx::ux)[ip]
+                amrex::Real uy = ptd.rdata(PlasmaIdx::uy)[ip]
+                amrex::Real psi = ptd.rdata(PlasmaIdx::psi)[ip]
+
+
+                RethermaliseMomentum(ptd, ip, xp, yp, ux, uy);
+                amrex::Real u[3] = {0.,0.,0.};
+                ParticleUtil::get_gaussian_random_momentum(u, 0., m_boundary_temperature, engine);
+
+        });
     }
 
 #ifdef HIPACE_USE_AB5_PUSH
