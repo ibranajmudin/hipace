@@ -14,12 +14,10 @@
 #include "utils/Constants.H"
 #include "Hipace.H"
 #include "GetAndSetPosition.H"
-#include "RethermaliseMomentum.H"
 #include "utils/HipaceProfilerWrapper.H"
 #include "utils/GPUUtil.H"
 #include "utils/OMPUtil.H"
 #include "utils/DualNumbers.H"
-#include "particles/particles_utils/ParticleUtil.H"
 
 #include <string>
 
@@ -276,24 +274,57 @@ AdvancePlasmaParticles (PlasmaParticleContainer& plasma, const Fields & fields,
             });
 
         // Rethermalise particles at the boundary here.
-        
-        amrex::ParallelForRNG(int(pti.numParticles()),
-            [=] AMREX_GPU_DEVICE (int ip, const amrex::RandomEngine& engine) {
+        if (Hipace::m_boundary_particles == ParticleBoundary::Thermal) {
 
-                if (ptd.id(ip) != PlasmaID::invalid_at_boundary) return;
+            const PhysConst phys_const_SI = make_constants_SI();
 
-                amrex::Real xp = ptd.pos(0, ip);
-                amrex::Real yp = ptd.pos(1, ip);
-                amrex::Real ux = ptd.rdata(PlasmaIdx::ux)[ip]
-                amrex::Real uy = ptd.rdata(PlasmaIdx::uy)[ip]
-                amrex::Real psi = ptd.rdata(PlasmaIdx::psi)[ip]
+            amrex::Real u_std = std::sqrt(Hipace::m_boundary_temperature * phys_const_SI.q_e / 
+                                (plasma.m_mass * (phys_const_SI.m_e / phys_const.m_e) *
+                                (phys_const_SI.c * phys_const_SI.c) ) );
 
 
-                RethermaliseMomentum(ptd, ip, xp, yp, ux, uy);
-                amrex::Real u[3] = {0.,0.,0.};
-                ParticleUtil::get_gaussian_random_momentum(u, 0., m_boundary_temperature, engine);
+            amrex::ParallelForRNG(int(pti.numParticles()),
+                [=] AMREX_GPU_DEVICE (int ip, const amrex::RandomEngine& engine) {
 
-        });
+                    // Use positions at t+1 to reflect and velocities at t
+                    amrex::Real xp = ptd.pos(0, ip);
+                    amrex::Real yp = ptd.pos(1, ip);
+                    amrex::Real ux = ptd.rdata(PlasmaIdx::ux_half_step)[ip];
+                    amrex::Real uy = ptd.rdata(PlasmaIdx::uy_half_step)[ip];
+                    amrex::Real psi = ptd.rdata(PlasmaIdx::psi_half_step)[ip];
+
+                    amrex::Real ux_dep = ptd.rdata(PlasmaIdx::ux)[ip];
+                    amrex::Real uy_dep = ptd.rdata(PlasmaIdx::uy)[ip];
+                    amrex::Real psi_dep = ptd.rdata(PlasmaIdx::psi)[ip];
+
+                    amrex::Real gamma = plasma_gamma(ux, uy, psi, 1/psi, 0);
+                    amrex::Real uz = plasma_uz(gamma, psi);
+
+                    amrex::Real gamma_dep = plasma_gamma(ux_dep, uy_dep, psi_dep, 1/psi_dep, 0);
+                    amrex::Real uz_dep = plasma_uz(gamma_dep, psi_dep);
+
+                    
+                    enforceBC(ptd, ip, xp, yp, ux, uy, uz, ux_dep, uy_dep, uz_dep, u_std, engine);
+
+                    ptd.pos(0, ip) = xp;
+                    ptd.pos(1, ip) = yp;
+
+                    // set values which will be used for the next push
+                    if (!temp_slice) {
+                        ptd.rdata(PlasmaIdx::ux_half_step)[ip] = ux;
+                        ptd.rdata(PlasmaIdx::uy_half_step)[ip] = uy;
+                        ptd.rdata(PlasmaIdx::psi_half_step)[ip] = plasma_psi(ux, uy, uz, 0._rt);
+                        ptd.rdata(PlasmaIdx::x_prev)[ip] = xp;
+                        ptd.rdata(PlasmaIdx::y_prev)[ip] = yp;
+                    }
+
+                    // don't include thermalised plasma particles in this iteration's current deposition
+                    ptd.rdata(PlasmaIdx::ux)[ip] = ux_dep;
+                    ptd.rdata(PlasmaIdx::uy)[ip] = uy_dep;
+                    ptd.rdata(PlasmaIdx::psi)[ip] = plasma_psi(ux_dep, uy_dep, uz_dep, 0._rt);
+
+            });
+        }
     }
 
 #ifdef HIPACE_USE_AB5_PUSH

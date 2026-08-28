@@ -16,6 +16,7 @@
 #define HIPACE_GETANDSETPOSITION_H_
 
 #include "Hipace.H"
+#include "particles/particles_utils/ParticleUtil.H"
 
 #include <AMReX.H>
 #include <AMReX_REAL.H>
@@ -88,22 +89,7 @@ struct EnforceBC
                 y += m_plo[1];
                 invalid = false;
             } else if (m_particle_boundary == ParticleBoundary::Thermal) {
-                x = std::fmod(x - m_plo[0], 2*len_x);
-                if (x < 0) x += 2*len_x;
-                x += m_plo[0];
-                if (x > m_phi[0]) {
-                    x = 2*m_phi[0] - x;
-                    ux = 0;
-                }
-                y = std::fmod(y - m_plo[1], 2*len_y);
-                if (y < 0) y += 2*len_y;
-                y += m_plo[1];
-                if (y > m_phi[1]) {
-                    y = 2*m_phi[1] - y;
-                    uy = 0;
-                }
-                ptd.id(ip) = PlasmaID::invalid_at_boundary;
-
+                ptd.id(ip) = PlasmaID::to_be_thermalised;
             } else {                       // ParticleBoundary::Absorbing
                 ptd.id(ip) = PlasmaID::invalid_at_boundary;
                 invalid = true;
@@ -113,8 +99,8 @@ struct EnforceBC
         return invalid;
     }
 
-    /** \brief enforces the boundary condition to the particle
-     * at index `ip` and returns if the particle is invalid
+    /** \brief enforces Thermal boundary condition to the particle
+     * at index `ip`
      * \param[in] ptd ParticleTileData
      * \param[in] ip index of the particle
      * \param[in] x x position of particle
@@ -124,62 +110,53 @@ struct EnforceBC
      */
     template<class PTD>
     AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-    bool operator() (const PTD& ptd,
+    void operator() (const PTD& ptd,
         const int ip, amrex::Real& x, amrex::Real& y,
-        amrex::Real& ux, amrex::Real& uy, amrex::Random& engine) const noexcept
+        amrex::Real& ux, amrex::Real& uy, amrex::Real& uz,
+        amrex::Real& ux_dep, amrex::Real& uy_dep, amrex::Real& uz_dep, amrex::Real u_std,
+        const amrex::RandomEngine& engine) const noexcept
     {
-        bool invalid = false;
-        if (x < m_plo[0] || y < m_plo[1] || x > m_phi[0] || y > m_phi[1]) {
-            const amrex::Real len_x = m_phi[0] - m_plo[0];
-            const amrex::Real len_y = m_phi[1] - m_plo[1];
-            if (m_particle_boundary == ParticleBoundary::Reflecting) {
-                x = std::fmod(x - m_plo[0], 2*len_x);
-                if (x < 0) x += 2*len_x;
-                x += m_plo[0];
-                if (x > m_phi[0]) {
-                    x = 2*m_phi[0] - x;
-                    ux = -ux;
-                }
-                y = std::fmod(y - m_plo[1], 2*len_y);
-                if (y < 0) y += 2*len_y;
-                y += m_plo[1];
-                if (y > m_phi[1]) {
-                    y = 2*m_phi[1] - y;
-                    uy = -uy;
-                }
-                invalid = false;
-            } else if (m_particle_boundary == ParticleBoundary::Periodic) {
-                x = std::fmod(x - m_plo[0], len_x);
-                if (x < 0) x += len_x;
-                x += m_plo[0];
-                y = std::fmod(y - m_plo[1], len_y);
-                if (y < 0) y += len_y;
-                y += m_plo[1];
-                invalid = false;
-            } else if (m_particle_boundary == ParticleBoundary::Thermal) {
-                x = std::fmod(x - m_plo[0], 2*len_x);
-                if (x < 0) x += 2*len_x;
-                x += m_plo[0];
-                if (x > m_phi[0]) {
-                    x = 2*m_phi[0] - x;
-                    ux = 0;
-                }
-                y = std::fmod(y - m_plo[1], 2*len_y);
-                if (y < 0) y += 2*len_y;
-                y += m_plo[1];
-                if (y > m_phi[1]) {
-                    y = 2*m_phi[1] - y;
-                    uy = 0;
-                }
-                ptd.id(ip) = PlasmaID::invalid_at_boundary;
+        // if called with the engine, then we are using thermal boudnaries, and need to
+        // thermalise particles at the boundary
 
-            } else {                       // ParticleBoundary::Absorbing
-                ptd.id(ip) = PlasmaID::invalid_at_boundary;
-                invalid = true;
+        if (ptd.id(ip) != PlasmaID::to_be_thermalised) return;
+
+        // get a random thermal velocity vector
+        amrex::Real u[3] = {0.,0.,0.};
+        ParticleUtil::get_gaussian_random_momentum(u, {0., 0., 0.}, {u_std, u_std, u_std}, engine);
+        ux = u[0];
+        uy = u[1];
+        uz = u[2];
+
+        const amrex::Real len_x = m_phi[0] - m_plo[0];
+        const amrex::Real len_y = m_phi[1] - m_plo[1];
+
+        if (x < m_plo[0] || x > m_phi[0]) { // reflect particle in x
+            if (x < m_plo[0]) ux = (ux > 0) ? ux : -ux;
+            else ux = (ux < 0) ? ux : -ux;
+
+            x = std::fmod(x - m_plo[0], 2*len_x);
+            if (x < 0) x += 2*len_x;
+            x += m_plo[0];
+            if (x > m_phi[0]) {
+                x = 2*m_phi[0] - x;
+            }
+        } else { // reflect particle in y
+            if (y < m_plo[1]) uy = (uy > 0) ? uy : -uy;
+            else uy = (uy < 0) ? uy : -uy;
+            
+            y = std::fmod(y - m_plo[1], 2*len_y);
+            if (y < 0) y += 2*len_y;
+            y += m_plo[1];
+            if (y > m_phi[1]) {
+                y = 2*m_phi[1] - y;
             }
         }
-
-        return invalid;
+        // plasma particle is now valid again!
+        ux_dep = ux;
+        uy_dep = uy;
+        uz_dep = uz;
+        ptd.id(ip) = PlasmaID::valid;
     }
 };
 
