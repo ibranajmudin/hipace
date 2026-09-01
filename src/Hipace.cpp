@@ -118,6 +118,7 @@ Hipace::ReadParameters ()
     }
     queryWithParser(pph, "max_time", m_max_time);
     queryWithParser(pph, "verbose", m_verbose);
+    queryWithParser(pph, "print_slice_interval", m_print_slice_interval);
     m_numprocs = amrex::ParallelDescriptor::NProcs();
     if (m_ignore_noncritical_warnings) {
         if (m_numprocs > m_max_step + 1 && amrex::ParallelDescriptor::IOProcessor()) {
@@ -683,6 +684,10 @@ Hipace::SolveOneSlice (int islice, int step, bool is_first_step, bool is_last_st
     HIPACE_PROFILE("Hipace::SolveOneSlice()");
 
     int current_N_level = 1;
+
+    if (m_print_slice_interval > 0 && islice%m_print_slice_interval == 0) {
+        amrex::Print() << "On slice number: ", islice, '\n';
+    }
 
     for (int lev=1; lev<m_N_level; ++lev) {
         if (m_3D_geom[lev].Domain().smallEnd(Direction::z) <= islice &&

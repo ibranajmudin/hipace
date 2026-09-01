@@ -227,6 +227,8 @@ public:
     bool m_has_last_step = false;
     /** Level of verbosity */
     inline static int m_verbose = 0;
+    /** Print interval for slice number (only for a single timestep simulation) */
+    inline static int m_print_slice_interval = 0;
     /** Relative transverse B field error tolerance in the predictor corrector loop
      */
     inline static amrex::Real m_predcorr_B_error_tolerance = 4e-2;
