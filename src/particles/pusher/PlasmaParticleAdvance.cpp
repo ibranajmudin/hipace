@@ -311,7 +311,6 @@ AdvancePlasmaParticles (PlasmaParticleContainer& plasma, const Fields & fields,
                         ptd.rdata(PlasmaIdx::y_prev)[ip] = yp;
                     }
 
-                    // do/don't include thermalised plasma particles in this iteration's current deposition (maybe change)
                     ptd.rdata(PlasmaIdx::ux)[ip] = ux;
                     ptd.rdata(PlasmaIdx::uy)[ip] = uy;
                     ptd.rdata(PlasmaIdx::psi)[ip] = psi;
