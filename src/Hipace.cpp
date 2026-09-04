@@ -873,6 +873,12 @@ Hipace::SolveOneSlice (int islice, int step, bool is_first_step, bool is_last_st
     m_multi_beam.shiftBeamSlices();
 
     m_multi_laser.ShiftLaserSlices(islice);
+
+    // get plasma particle diagnostics after final push
+    bool is_last_slice = (islice == 0);
+    if (is_last_slice) {
+        FillPlasmaDiagnostics(step, m_physical_time, is_last_step);
+    }
 }
 
 void
@@ -1346,6 +1352,17 @@ Hipace::FillBeamDiagnostics (const int step, const amrex::Real time, const bool 
 }
 
 void
+Hipace::FillPlasmaDiagnostics (const int step, const amrex::Real time, const bool is_last_step)
+{
+#ifdef HIPACE_USE_OPENPMD
+    m_openpmd_writer.InitPlasmaData(m_multi_plasma, getDiagPlasmaNames());
+    m_openpmd_writer.CopyPlasmas(m_multi_plasma, getDiagPlasmaNames());
+#else
+    amrex::ignore_unused(step, time, is_last_step);
+#endif
+}
+
+void
 Hipace::WriteDiagnostics (const int step, const amrex::Real time, const bool is_last_step)
 {
 #ifdef HIPACE_USE_OPENPMD
@@ -1358,6 +1375,10 @@ Hipace::WriteDiagnostics (const int step, const amrex::Real time, const bool is_
         m_openpmd_writer.WriteBeamDiagnostics(m_multi_beam, m_physical_time, step,
             getDiagBeamNames(), m_3D_geom);
     }
+
+    m_openpmd_writer.WritePlasmaDiagnostics(m_multi_plasma, m_physical_time, step,
+        getDiagPlasmaNames(), m_3D_geom);
+        
 #else
     amrex::ignore_unused(step, time, is_last_step);
     amrex::Print()<<"WARNING: HiPACE++ compiled without openPMD support, the simulation has no I/O.\n";
