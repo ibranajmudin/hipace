@@ -426,6 +426,10 @@ Diagnostic::Initialize (int nlev, bool use_laser) {
             );
         }
     }
+
+    // diagnostic for plasma particles in final slice of a timestep
+    queryWithParser(ppd, "plasma_data", m_output_plasma_names);
+
 }
 
 void
