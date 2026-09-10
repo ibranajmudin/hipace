@@ -54,6 +54,7 @@ public:
      *        Particles of both species are sorted per cell, paired, and collided pairwise.
      *
      * \param[in] islice current slice number
+     * \param[in] collide_every interval between collision operations
      * \param[in] lev MR level
      * \param[in] bx transverse box (plasma particles will be sorted per-cell on this box)
      * \param[in] geom corresponding geometry object
