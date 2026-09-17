@@ -875,7 +875,7 @@ Hipace::SolveOneSlice (int islice, int step, bool is_first_step, bool is_last_st
     m_multi_laser.ShiftLaserSlices(islice);
 
     // get plasma particle diagnostics after final push
-    DoPlasmaDiagnostics(step, m_physical_time, is_last_step);
+    DoPlasmaDiagnostics(step, islice, m_physical_time, is_last_step);
 }
 
 void
@@ -1377,7 +1377,7 @@ Hipace::WriteDiagnostics (const int step, const amrex::Real time, const bool is_
         m_openpmd_writer.WriteBeamDiagnostics(m_multi_beam, m_physical_time, step,
             getDiagBeamNames(), m_3D_geom);
     }
-        
+
 #else
     amrex::ignore_unused(step, time, is_last_step);
     amrex::Print()<<"WARNING: HiPACE++ compiled without openPMD support, the simulation has no I/O.\n";

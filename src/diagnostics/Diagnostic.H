@@ -238,7 +238,6 @@ private:
     /** Number of iterations between consecutive output dumps.
      * Default is 0, meaning no output */
     utils::DiagPeriod m_beam_output_period = "0";
-    utils::DiagPeriod m_plasma_output_period = "0";
     int m_plasma_slice_interval {0};
     amrex::Vector<DiagnosticData> m_diag_data; /**< individual field diag data */
 };
