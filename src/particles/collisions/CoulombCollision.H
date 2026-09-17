@@ -50,7 +50,6 @@ public:
      * \brief Perform Coulomb collisions of a beam with a plasma species over a push by one beam time step
      *        Particles of both species are sorted per cell, paired, and collided pairwise.
      *
-     * \param[in] islice current slice number
      * \param[in] lev MR level
      * \param[in] bx transverse box (plasma particles will be sorted per-cell on this box)
      * \param[in] geom corresponding geometry object

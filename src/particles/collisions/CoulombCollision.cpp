@@ -104,8 +104,8 @@ CoulombCollision::doPlasmaPlasmaCoulombCollision (
             const amrex::Real inv_dV = geom.InvCellSize(0)*geom.InvCellSize(1)*geom.InvCellSize(2);
             // static_cast<double> to avoid precision problems in FP32
             const amrex::Real wp = std::sqrt(static_cast<double>(background_density_SI) *
-                                           PhysConstSI::q_e*PhysConstSI::q_e /
-                                           (PhysConstSI::ep0*PhysConstSI::m_e));
+                                             PhysConstSI::q_e*PhysConstSI::q_e /
+                                             (PhysConstSI::ep0*PhysConstSI::m_e));
             const amrex::Real dt = normalized_units ? geom.CellSize(2)/wp
                                                     : geom.CellSize(2)/PhysConstSI::c;
 
@@ -183,8 +183,8 @@ CoulombCollision::doPlasmaPlasmaCoulombCollision (
             const amrex::Real inv_dV = geom.InvCellSize(0)*geom.InvCellSize(1)*geom.InvCellSize(2);
             // static_cast<double> to avoid precision problems in FP32
             const amrex::Real wp = std::sqrt(static_cast<double>(background_density_SI) *
-                                           PhysConstSI::q_e*PhysConstSI::q_e /
-                                           (PhysConstSI::ep0*PhysConstSI::m_e));
+                                             PhysConstSI::q_e*PhysConstSI::q_e /
+                                             (PhysConstSI::ep0*PhysConstSI::m_e));
             const amrex::Real dt = normalized_units ? geom.CellSize(2)/wp
                                                     : geom.CellSize(2)/PhysConstSI::c;
             // Extract particles in the tile that `mfi` points to
@@ -211,7 +211,7 @@ CoulombCollision::doPlasmaPlasmaCoulombCollision (
 
                     // Do not collide if one species is missing in the cell
                     if ( cell_stop1 - cell_start1 < 1 ||
-                        cell_stop2 - cell_start2 < 1 ) return;
+                         cell_stop2 - cell_start2 < 1 ) return;
                     // shuffle
                     ShuffleFisherYates(indices1, cell_start1, cell_stop1, engine);
                     ShuffleFisherYates(indices2, cell_start2, cell_stop2, engine);
@@ -322,7 +322,7 @@ CoulombCollision::doBeamPlasmaCoulombCollision (
 
                 // Do not collide if one species is missing in the cell
                 if ( cell_stop1 - cell_start1 < 1 ||
-                    cell_stop2 - cell_start2 < 1 ) return;
+                     cell_stop2 - cell_start2 < 1 ) return;
                 // shuffle
                 ShuffleFisherYates(indices1, cell_start1, cell_stop1, engine);
                 ShuffleFisherYates(indices2, cell_start2, cell_stop2, engine);
