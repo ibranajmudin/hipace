@@ -104,8 +104,8 @@ CoulombCollision::doPlasmaPlasmaCoulombCollision (
             const amrex::Real inv_dV = geom.InvCellSize(0)*geom.InvCellSize(1)*geom.InvCellSize(2);
             // static_cast<double> to avoid precision problems in FP32
             const amrex::Real wp = std::sqrt(static_cast<double>(background_density_SI) *
-                                            PhysConstSI::q_e*PhysConstSI::q_e /
-                                            (PhysConstSI::ep0*PhysConstSI::m_e));
+                                           PhysConstSI::q_e*PhysConstSI::q_e /
+                                           (PhysConstSI::ep0*PhysConstSI::m_e));
             const amrex::Real dt = normalized_units ? geom.CellSize(2)/wp
                                                     : geom.CellSize(2)/PhysConstSI::c;
 
@@ -183,8 +183,8 @@ CoulombCollision::doPlasmaPlasmaCoulombCollision (
             const amrex::Real inv_dV = geom.InvCellSize(0)*geom.InvCellSize(1)*geom.InvCellSize(2);
             // static_cast<double> to avoid precision problems in FP32
             const amrex::Real wp = std::sqrt(static_cast<double>(background_density_SI) *
-                                            PhysConstSI::q_e*PhysConstSI::q_e /
-                                            (PhysConstSI::ep0*PhysConstSI::m_e));
+                                           PhysConstSI::q_e*PhysConstSI::q_e /
+                                           (PhysConstSI::ep0*PhysConstSI::m_e));
             const amrex::Real dt = normalized_units ? geom.CellSize(2)/wp
                                                     : geom.CellSize(2)/PhysConstSI::c;
             // Extract particles in the tile that `mfi` points to

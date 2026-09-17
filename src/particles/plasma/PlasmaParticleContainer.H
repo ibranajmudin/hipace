@@ -101,7 +101,7 @@ struct PlasmaIdx
         psi,                // pseudo-potential at the particle position. ATTENTION what is stored is actually normalized psi+1
         x_prev, y_prev,     // positions on the last non-temp slice
 
-        ux_half_step,       // momentum half a step behind the current slice (t-1/2) for leapfrog pusher
+        ux_half_step,       // momentum half a step behind the current slice for leapfrog pusher
         uy_half_step,       // at the same step for AB5 pusher
         psi_half_step,      // never effected by temp slice
 #ifdef HIPACE_USE_AB5_PUSH
