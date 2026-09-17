@@ -861,7 +861,7 @@ Hipace::SolveOneSlice (int islice, int step, bool is_first_step, bool is_last_st
     m_multi_beam.shiftSlippedParticles(islice, m_3D_geom[0]);
 
     // collisions for plasmas and beams
-    doCoulombCollision(islice);
+    doCoulombCollision();
 
     // get minimum beam uz after push
     m_adaptive_time_step.GatherMinUzSlice(m_multi_beam, false);
@@ -1289,7 +1289,7 @@ Hipace::AddGridExternalFields (const int lev, const int islice)
 }
 
 void
-Hipace::doCoulombCollision (int islice)
+Hipace::doCoulombCollision ()
 {
 
     // collisions for all particles calculated on level 0
@@ -1304,7 +1304,7 @@ Hipace::doCoulombCollision (int islice)
 
             // TODO: enable tiling
 
-            CoulombCollision::doBeamPlasmaCoulombCollision( islice, m_all_collisions[i].m_collide_every,
+            CoulombCollision::doBeamPlasmaCoulombCollision(
                 lev, m_slice_geom[0].Domain(), m_slice_geom[0], species1, species2,
                 m_all_collisions[i].m_CoulombLog, m_background_density_SI);
         } else {
@@ -1314,7 +1314,7 @@ Hipace::doCoulombCollision (int islice)
 
             // TODO: enable tiling
 
-            CoulombCollision::doPlasmaPlasmaCoulombCollision( islice, m_all_collisions[i].m_collide_every,
+            CoulombCollision::doPlasmaPlasmaCoulombCollision(
                 lev, m_slice_geom[0].Domain(), m_slice_geom[0], species1, species2, m_all_collisions[i].m_isSameSpecies,
                 m_all_collisions[i].m_CoulombLog, m_background_density_SI);
         }

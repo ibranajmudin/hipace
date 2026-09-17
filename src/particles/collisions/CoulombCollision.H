@@ -20,7 +20,6 @@ public:
     int  m_nbeams {0};
     bool m_isSameSpecies {false};
     amrex::Real m_CoulombLog {-1.};
-    int  m_collide_every {1};
 
     /** Read parameters from the input file */
     void ReadParameters (
@@ -32,8 +31,6 @@ public:
      * \brief Perform Coulomb collisions of plasma species over longitudinal push by 1 cell.
      *        Particles of both species are sorted per cell, paired, and collided pairwise.
      *
-     * \param[in] islice current slice number
-     * \param[in] collide_every interval between collision calculations
      * \param[in] lev MR level
      * \param[in] bx transverse box (plasma particles will be sorted per-cell on this box)
      * \param[in] geom corresponding geometry object
@@ -44,7 +41,7 @@ public:
      *            Coulomb logarithm is deduced from the plasma temperature, measured in each cell.
      * \param[in] background_density_SI background plasma density (only needed for normalized units)
      **/
-    static void doPlasmaPlasmaCoulombCollision ( int islice, int collide_every,
+    static void doPlasmaPlasmaCoulombCollision (
         int lev, const amrex::Box& bx, const amrex::Geometry& geom, PlasmaParticleContainer& species1,
         PlasmaParticleContainer& species2, bool is_same_species, amrex::Real CoulombLog,
         amrex::Real background_density_SI);
@@ -63,7 +60,7 @@ public:
      *            Coulomb logarithm is deduced from the plasma temperature, measured in each cell.
      * \param[in] background_density_SI background plasma density (only needed for normalized units)
      **/
-    static void doBeamPlasmaCoulombCollision ( int islice, int collide_every,
+    static void doBeamPlasmaCoulombCollision (
         int lev, const amrex::Box& bx, const amrex::Geometry& geom,
         BeamParticleContainer& species1, PlasmaParticleContainer& species2, amrex::Real CoulombLog,
         amrex::Real background_density_SI);
