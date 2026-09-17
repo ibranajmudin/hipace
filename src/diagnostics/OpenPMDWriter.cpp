@@ -148,12 +148,12 @@ void
 OpenPMDWriter::WritePlasmaDiagnostics (
     MultiPlasma& a_multi_plasma, const amrex::Real physical_time, const int output_step,
     const amrex::Vector< std::string > plasmanames,
-    amrex::Vector<amrex::Geometry> const& geom3D)
+    amrex::Vector<amrex::Geometry> const& geom3D, int islice)
 {
     openPMD::Iteration iteration = m_outputSeries->iterations[output_step];
     iteration.setTime(physical_time);
 
-    WritePlasmaParticleData(a_multi_plasma, iteration, geom3D[0], plasmanames);
+    WritePlasmaParticleData(a_multi_plasma, iteration, geom3D[0], plasmanames, islice);
 }
 
 void
@@ -484,7 +484,8 @@ OpenPMDWriter::CopyPlasmas(MultiPlasma& plasmas, const amrex::Vector< std::strin
 void
 OpenPMDWriter::WritePlasmaParticleData(MultiPlasma& plasmas, openPMD::Iteration& iteration,
                             const amrex::Geometry& geom,
-                            const amrex::Vector< std::string > plasmanames)
+                            const amrex::Vector< std::string > plasmanames,
+                            int islice)
 {
     HIPACE_PROFILE("OpenPMDWriter::WritePlasmaParticleData()");
 
@@ -494,7 +495,9 @@ OpenPMDWriter::WritePlasmaParticleData(MultiPlasma& plasmas, openPMD::Iteration&
     const int nplasmas = plasmanames.size();
     for (int iplasma = 0; iplasma < nplasmas; iplasma++) {
 
-        openPMD::ParticleSpecies plasma_species = iteration.particles[plasmanames[iplasma]];
+        std::string name = plasmanames[iplasma] + "_" + std::to_string(islice);
+
+        openPMD::ParticleSpecies plasma_species = iteration.particles[name];
 
         auto& plasma = plasmas.GetPlasma(plasmanames[iplasma]);
 

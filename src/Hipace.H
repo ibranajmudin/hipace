@@ -369,7 +369,7 @@ private:
 
     void InitDiagnostics (const int step, const amrex::Real time, const bool is_last_step);
     void FillBeamDiagnostics (const int step, const amrex::Real time, const bool is_last_step);
-    void FillPlasmaDiagnostics (const int step, const amrex::Real time, const bool is_last_step);
+    void DoPlasmaDiagnostics (const int step, const int islice, const amrex::Real time, const bool is_last_step);
     void WriteDiagnostics (const int step, const amrex::Real time, const bool is_last_step);
     void FlushDiagnostics ();
 

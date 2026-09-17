@@ -94,6 +94,9 @@ public:
     /** \brief return names of the plasmas to output */
     amrex::Vector<std::string>& getPlasmaNames () { return m_output_plasma_names; }
 
+    /** \brief return names of the plasmas to output */
+    int& getPlasmaSliceInterval () { return m_plasma_slice_interval; }
+
     /** \brief return data for all field diagnostics */
     amrex::Vector<DiagnosticData>& getDiagData () { return m_diag_data; }
 

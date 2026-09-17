@@ -73,10 +73,12 @@ private:
      * \param[in,out] iteration openPMD iteration to which the data is written
      * \param[in] geom Geometry of the simulation, to get the cell size etc.
      * \param[in] plasmanames list of the names of the plasma species to be written to file
+     * \param[in] islice current slice number
      */
     void WritePlasmaParticleData (MultiPlasma& plasmas, openPMD::Iteration& iteration,
                                 const amrex::Geometry& geom,
-                                const amrex::Vector< std::string > plasmanames);
+                                const amrex::Vector< std::string > plasmanames,
+                                int islice);
 
     /** \brief writing openPMD field data
      *
@@ -172,16 +174,17 @@ public:
 
     /** \brief writing openPMD plasma data
      *
-     * \param[in] a_multi_beam multi plasma container which is written to openPMD file
+     * \param[in] a_multi_plasma multi plasma container which is written to openPMD file
      * \param[in] physical_time Physical time of the currenerationt it.
      * \param[in] output_step current iteration to be written to file
-     * \param[in] beamnames list of the names of the plasma to be written to file
+     * \param[in] plasmanames list of the names of the plasma to be written to file
      * \param[in] geom3D 3D Geometry of the simulation, to get the cell size etc.
+     * \param[in] islice current slice number
      */
     void WritePlasmaDiagnostics (
         MultiPlasma& a_multi_plasma, const amrex::Real physical_time, const int output_step,
         const amrex::Vector< std::string > plasmanames,
-        amrex::Vector<amrex::Geometry> const& geom3D);
+        amrex::Vector<amrex::Geometry> const& geom3D, int islice);
 
     /** \brief writing openPMD field data
      *
