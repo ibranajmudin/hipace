@@ -685,10 +685,6 @@ Hipace::SolveOneSlice (int islice, int step, bool is_first_step, bool is_last_st
 
     int current_N_level = 1;
 
-    if (m_print_slice_interval > 0 && islice%m_print_slice_interval == 0) {
-        amrex::Print() << "On slice number: " << islice << '\n';
-    }
-
     for (int lev=1; lev<m_N_level; ++lev) {
         if (m_3D_geom[lev].Domain().smallEnd(Direction::z) <= islice &&
             m_3D_geom[lev].Domain().bigEnd(Direction::z) >= islice) {
