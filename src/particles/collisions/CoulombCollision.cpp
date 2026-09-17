@@ -246,7 +246,7 @@ CoulombCollision::doBeamPlasmaCoulombCollision ( int islice,  int collide_every,
     amrex::Real background_density_SI)
 {
     if (islice%collide_every != 0) {return;}
-    
+
     HIPACE_PROFILE("CoulombCollision::doBeamPlasmaCoulombCollision()");
     AMREX_ALWAYS_ASSERT(lev == 0);
 
