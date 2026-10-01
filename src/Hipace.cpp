@@ -1317,11 +1317,7 @@ Hipace::doCoulombCollision ()
 
             // TODO: enable tiling
 
-<<<<<<< HEAD
             CoulombCollision::doPlasmaPlasmaCoulombCollision( islice, m_all_collisions[i].m_collision_period,
-=======
-            CoulombCollision::doPlasmaPlasmaCoulombCollision(
->>>>>>> thermal_boundaries
                 lev, m_slice_geom[0].Domain(), m_slice_geom[0], species1, species2, m_all_collisions[i].m_isSameSpecies,
                 m_all_collisions[i].m_CoulombLog, m_background_density_SI);
         }
