@@ -25,12 +25,15 @@ CoulombCollision::ReadParameters(
 
     // default Coulomb log is -1, if < 0 (e.g. not specified), will be computed automatically
     pp.query("CoulombLog", m_CoulombLog);
+<<<<<<< HEAD
     // how often the collision operator should be applied - every m_collision_period slices
     pp.query("collision_period", m_collision_period);
     AMREX_ALWAYS_ASSERT_WITH_MESSAGE(
         m_collision_period >= 1,
         "collision_period must be a positive number"
     );
+=======
+>>>>>>> thermal_boundaries
 
     for (int i=0; i<(int) beam_species_names.size(); i++) {
         if (beam_species_names[i] == collision_species[0]) m_nbeams += 1;
@@ -64,11 +67,16 @@ CoulombCollision::ReadParameters(
 }
 
 void
+<<<<<<< HEAD
 CoulombCollision::doPlasmaPlasmaCoulombCollision ( int islice, int collision_period,
+=======
+CoulombCollision::doPlasmaPlasmaCoulombCollision (
+>>>>>>> thermal_boundaries
     int lev, const amrex::Box& bx, const amrex::Geometry& geom, PlasmaParticleContainer& species1,
     PlasmaParticleContainer& species2, bool is_same_species, amrex::Real CoulombLog,
     amrex::Real background_density_SI)
 {
+<<<<<<< HEAD
     if (islice%collision_period != 0) {return;}
 
     HIPACE_PROFILE("CoulombCollision::doCoulombCollision()");
@@ -134,6 +142,70 @@ CoulombCollision::doPlasmaPlasmaCoulombCollision ( int islice, int collision_per
                     ShuffleFisherYates(
                         indices1, cell_start1, cell_half1, engine );
 
+=======
+    HIPACE_PROFILE("CoulombCollision::doCoulombCollision()");
+    AMREX_ALWAYS_ASSERT(lev == 0);
+
+    if (species1.TotalNumberOfParticles(false, true) == 0 ||
+        species2.TotalNumberOfParticles(false, true) == 0) return;
+
+    using namespace amrex::literals;
+    const PhysConst cst = get_phys_const();
+    bool normalized_units = Hipace::m_normalized_units;
+
+    const amrex::Real clight = cst.c;
+    constexpr amrex::Real inv_c_SI = 1.0_rt / PhysConstSI::c;
+    constexpr amrex::Real inv_c2_SI = 1.0_rt / ( PhysConstSI::c * PhysConstSI::c );
+
+    if ( is_same_species ) // species_1 == species_2
+    {
+        // Logically particles per-cell, and return indices of particles in each cell
+        PlasmaBins bins1 = findParticlesInEachTile(bx, 1, species1, geom);
+        int const n_cells = bins1.numBins();
+
+        // Counter to check there is only 1 box
+        int count = 0;
+        for (PlasmaParticleIterator pti(species1); pti.isValid(); ++pti) {
+
+            // Get particles SoA data
+            auto& ptile1 = pti.GetParticleTile();
+            amrex::Real* const ux1 = ptile1.GetRealData(PlasmaIdx::ux_half_step).data();
+            amrex::Real* const uy1 = ptile1.GetRealData(PlasmaIdx::uy_half_step).data();
+            amrex::Real* const psi1 = ptile1.GetRealData(PlasmaIdx::psi_half_step).data();
+            const amrex::Real* const w1 = ptile1.GetRealData(PlasmaIdx::w).data();
+            const int* const ion_lev1 = ptile1.GetIntData(PlasmaIdx::ion_lev).data();
+            PlasmaBins::index_type * const indices1 = bins1.permutationPtr();
+            PlasmaBins::index_type const * const offsets1 = bins1.offsetsPtr();
+            amrex::Real q1 = species1.GetCharge();
+            amrex::Real m1 = species1.GetMass();
+            const bool can_ionize1 = species1.m_can_ionize;
+
+            // volume is used to calculate density, but weights already represent density in normalized units
+            const amrex::Real inv_dV = geom.InvCellSize(0)*geom.InvCellSize(1)*geom.InvCellSize(2);
+            // static_cast<double> to avoid precision problems in FP32
+            const amrex::Real wp = std::sqrt(static_cast<double>(background_density_SI) *
+                                             PhysConstSI::q_e*PhysConstSI::q_e /
+                                             (PhysConstSI::ep0*PhysConstSI::m_e));
+            const amrex::Real dt = normalized_units ? geom.CellSize(2)/wp
+                                                    : geom.CellSize(2)/PhysConstSI::c;
+
+            amrex::ParallelForRNG(
+                n_cells,
+                [=] AMREX_GPU_DEVICE (int i_cell, amrex::RandomEngine const& engine) noexcept
+                {
+                    // The particles from species1 that are in the cell `i_cell` are
+                    // given by the `indices_1[cell_start_1:cell_stop_1]`
+                    PlasmaBins::index_type const cell_start1 = offsets1[i_cell];
+                    PlasmaBins::index_type const cell_stop1  = offsets1[i_cell+1];
+                    PlasmaBins::index_type const cell_half1 = (cell_start1+cell_stop1)/2;
+
+                    if ( cell_stop1 - cell_start1 <= 1 ) return;
+                    // Do not collide if there is only one particle in the cell
+                    // shuffle
+                    ShuffleFisherYates(
+                        indices1, cell_start1, cell_half1, engine );
+
+>>>>>>> thermal_boundaries
                     // TODO: FIX DT
                     // Call the function in order to perform collisions
                     ElasticCollisionPerez(
@@ -192,11 +264,18 @@ CoulombCollision::doPlasmaPlasmaCoulombCollision ( int islice, int collision_per
             const amrex::Real inv_dV = geom.InvCellSize(0)*geom.InvCellSize(1)*geom.InvCellSize(2);
             // static_cast<double> to avoid precision problems in FP32
             const amrex::Real wp = std::sqrt(static_cast<double>(background_density_SI) *
+<<<<<<< HEAD
                                             PhysConstSI::q_e*PhysConstSI::q_e /
                                             (PhysConstSI::ep0*PhysConstSI::m_e));
             amrex::Real dt = normalized_units ? geom.CellSize(2)/wp
                                                     : geom.CellSize(2)/PhysConstSI::c;
             dt = dt * collision_period;
+=======
+                                             PhysConstSI::q_e*PhysConstSI::q_e /
+                                             (PhysConstSI::ep0*PhysConstSI::m_e));
+            const amrex::Real dt = normalized_units ? geom.CellSize(2)/wp
+                                                    : geom.CellSize(2)/PhysConstSI::c;
+>>>>>>> thermal_boundaries
             // Extract particles in the tile that `mfi` points to
             // ParticleTileType& ptile_1 = species_1->ParticlesAt(lev, mfi);
             // ParticleTileType& ptile_2 = species_2->ParticlesAt(lev, mfi);
@@ -221,7 +300,11 @@ CoulombCollision::doPlasmaPlasmaCoulombCollision ( int islice, int collision_per
 
                     // Do not collide if one species is missing in the cell
                     if ( cell_stop1 - cell_start1 < 1 ||
+<<<<<<< HEAD
                         cell_stop2 - cell_start2 < 1 ) return;
+=======
+                         cell_stop2 - cell_start2 < 1 ) return;
+>>>>>>> thermal_boundaries
                     // shuffle
                     ShuffleFisherYates(indices1, cell_start1, cell_stop1, engine);
                     ShuffleFisherYates(indices2, cell_start2, cell_stop2, engine);
