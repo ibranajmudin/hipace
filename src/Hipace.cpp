@@ -861,7 +861,7 @@ Hipace::SolveOneSlice (int islice, int step, bool is_first_step, bool is_last_st
     m_multi_beam.shiftSlippedParticles(islice, m_3D_geom[0]);
 
     // collisions for plasmas and beams
-    doCoulombCollision();
+    doCoulombCollision(islice);
 
     // get minimum beam uz after push
     m_adaptive_time_step.GatherMinUzSlice(m_multi_beam, false);
@@ -1292,7 +1292,7 @@ Hipace::AddGridExternalFields (const int lev, const int islice)
 }
 
 void
-Hipace::doCoulombCollision ()
+Hipace::doCoulombCollision (int islice)
 {
 
     // collisions for all particles calculated on level 0
